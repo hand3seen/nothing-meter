@@ -1,5 +1,83 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>THE NOTHING METER — Headmosh Studio</title><style>
 :root{--paper:#eee9dc;--ink:#171715;--orange:#ee5425}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,Helvetica,sans-serif}main{max-width:1060px;margin:auto;padding:28px 26px 45px}header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid var(--ink);padding-bottom:20px;font-size:13px;font-weight:900;letter-spacing:.04em}header .brand{font-size:22px;line-height:.9}header .right{text-align:right}h1{font-size:clamp(55px,11vw,142px);letter-spacing:-.09em;line-height:.83;margin:42px 0 22px;font-weight:950;max-width:850px}.tm{font-size:.25em;vertical-align:top;letter-spacing:0}.subtitle{font-size:clamp(16px,2.5vw,24px);font-weight:700;margin-bottom:38px}.stage{background:var(--orange);padding:clamp(22px,5vw,55px);min-height:380px;display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative;overflow:hidden}.stage:before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 7px,#00000005 8px);pointer-events:none}.readout{font-weight:900;font-size:clamp(80px,18vw,185px);letter-spacing:-.09em;line-height:1;position:relative;font-variant-numeric:tabular-nums}.unit{font-size:20px;font-weight:900;letter-spacing:.1em}.status{font-size:13px;font-weight:900;letter-spacing:.1em;margin:15px 0 24px;text-align:center}.controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;position:relative}button{border:3px solid var(--ink);background:var(--ink);color:var(--paper);padding:14px 24px;font-size:15px;font-weight:900;cursor:pointer;letter-spacing:.03em}button.secondary{background:transparent;color:var(--ink)}button:hover{filter:brightness(1.12)}button:focus-visible{outline:4px solid white;outline-offset:3px}.instructions{display:grid;grid-template-columns:1fr 1fr;gap:30px;border-bottom:2px solid var(--ink);padding:25px 0}.eyebrow{font-size:12px;letter-spacing:.1em;font-weight:900}.instructions p{font-size:18px;line-height:1.45;margin:8px 0}.result{display:none;margin-top:34px}.result.visible{display:block}.result h2{font-size:clamp(32px,6vw,64px);letter-spacing:-.06em;line-height:1;margin:10px 0}.art{background:#fff;max-width:660px;border:2px solid var(--ink);margin:20px 0}.art svg{display:block;width:100%;height:auto}.footer{display:flex;justify-content:space-between;gap:20px;margin-top:36px;font-size:12px;font-weight:800}.muted{opacity:.7}body.testing{cursor:none}body.testing .stage{background:#e95425}body.testing button{pointer-events:none} @media(max-width:650px){main{padding:18px}.instructions{grid-template-columns:1fr;gap:8px}.footer{flex-direction:column}header .brand{font-size:17px}.stage{min-height:340px}}
 </style></head><body><main><header><div class="brand">HEADMOSH<br>STUDIO®</div><div class="right">BUREAU OF EXPERIMENTAL AFFAIRS<br>EXPERIMENT 001 / OPEN STUDY</div></header><h1>THE<br>NOTHING<br>METER<span class="tm">™</span></h1><div class="subtitle">A controlled investigation into doing absolutely nothing.</div><section class="stage" id="stage"><div class="eyebrow">LIVE INACTIVITY READING</div><div class="readout" id="clock">0.00</div><div class="unit">SECONDS OF NOTHING</div><div class="status" id="status" aria-live="polite">INSTRUMENT READY</div><div class="controls"><button id="start">BEGIN EXPERIMENT</button><button id="reset" class="secondary">RESET</button></div></section><section class="instructions"><div><div class="eyebrow">PROCEDURE / 01</div><p>Press BEGIN. Release the button. Do absolutely nothing. Your first movement, key press, click, scroll, or touch ends the experiment.</p></div><div><div class="eyebrow">RESEARCH NOTE / 02</div><p>When the experiment ends, your duration will be translated into a unique geometric record. Results are generated on your device.</p></div></section><section class="result" id="result"><div class="eyebrow">EXPERIMENT COMPLETE / PERSONAL RECORD</div><h2 id="headline">NOTHING DETECTED.</h2><p id="summary"></p><div class="art" id="art"></div><div class="controls" style="justify-content:flex-start"><button id="save">SAVE ARTWORK (SVG)</button><button id="again" class="secondary">TRY AGAIN</button></div></section><footer class="footer"><span>HEADMOSH STUDIO — CURIOSITY MADE VISIBLE.</span><span class="muted">NO ACCOUNT. NO DATA COLLECTION. NO PARTICULAR PURPOSE.</span></footer></main><script>
-(()=>{'use strict';const $=id=>document.getElementById(id);let active=false,start=0,raf=0,armedAt=0,last=0,svgText='';const fmt=t=>(t/1000).toFixed(2);function tick(){if(!active)return;last=performance.now()-start;$('clock').textContent=fmt(last);raf=requestAnimationFrame(tick)}function begin(){reset();active=true;start=performance.now();armedAt=start+450;document.body.classList.add('testing');$('status').textContent='DO NOT DO ANYTHING';raf=requestAnimationFrame(tick)}function finish(){if(!active)return;active=false;cancelAnimationFrame(raf);last=performance.now()-start;document.body.classList.remove('testing');$('clock').textContent=fmt(last);$('status').textContent='ACTIVITY DETECTED — EXPERIMENT TERMINATED';$('result').classList.add('visible');$('summary').textContent=`You successfully accomplished ${fmt(last)} seconds of nothing. This record was produced by your inability to continue.`;svgText=makeArt(last);$('art').innerHTML=svgText;$('result').scrollIntoView({behavior:'smooth',block:'start'})}function reset(){active=false;cancelAnimationFrame(raf);document.body.classList.remove('testing');$('clock').textContent='0.00';$('status').textContent='INSTRUMENT READY';$('result').classList.remove('visible');last=0}function activity(e){if(!active||performance.now()<armedAt)return;if(e.type==='pointermove'&&e.pointerType==='touch')return;finish()}$('start').addEventListener('click',begin);$('reset').addEventListener('click',reset);$('again').addEventListener('click',()=>{reset();window.scrollTo({top:0,behavior:'smooth'})});['pointermove','pointerdown','keydown','wheel','touchstart','scroll'].forEach(ev=>window.addEventListener(ev,activity,{passive:true}));document.addEventListener('visibilitychange',()=>{if(document.hidden&&active)finish()});function makeArt(ms){const seed=Math.floor(ms*10)+17;let s=seed;function rnd(){s=(Math.imul(1664525,s)+1013904223)>>>0;return s/4294967296}const count=Math.min(90,12+Math.floor(ms/750));let shapes='';for(let i=0;i<count;i++){const x=45+rnd()*510,y=90+rnd()*510,r=4+rnd()*65,opacity=(.12+rnd()*.72).toFixed(2),col=i%7===0?'#ec5425':'#171715';if(i%3===0)shapes+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="none" stroke="${col}" stroke-width="${(1+rnd()*5).toFixed(1)}" opacity="${opacity}"/>`;else shapes+=`<path d="M${x.toFixed(1)} ${y.toFixed(1)}l${(rnd()*100-50).toFixed(1)} ${(rnd()*100-50).toFixed(1)}" stroke="${col}" stroke-width="${(1+rnd()*7).toFixed(1)}" opacity="${opacity}"/>`;}return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 740" role="img" aria-label="Unique abstract artwork generated from ${fmt(ms)} seconds of inactivity"><rect width="600" height="740" fill="#f0ecdf"/><text x="34" y="43" font-family="Arial" font-weight="900" font-size="23" fill="#171715">HEADMOSH / NOTHING METER</text><path d="M34 56H566" stroke="#171715" stroke-width="3"/>${shapes}<rect x="0" y="628" width="600" height="112" fill="#171715"/><text x="34" y="682" font-family="Arial" font-weight="900" font-size="48" fill="#f0ecdf">${fmt(ms)} SECONDS</text><text x="36" y="712" font-family="Arial" font-size="12" font-weight="700" letter-spacing="2" fill="#f0ecdf">EXPERIMENT 001 — NOTHING DETECTED</text></svg>`} $('save').addEventListener('click',()=>{if(!svgText)return;const blob=new Blob([svgText],{type:'image/svg+xml'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='headmosh-nothing-'+fmt(last).replace('.','-')+'.svg';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)});})();
+(()=>{'use strict';const $=id=>document.getElementById(id);let active=false,start=0,raf=0,armedAt=0,last=0,svgText='';const fmt=t=>(t/1000).toFixed(2);function tick(){if(!active)return;last=performance.now()-start;$('clock').textContent=fmt(last);raf=requestAnimationFrame(tick)}function begin(){reset();active=true;start=performance.now();armedAt=start+450;document.body.classList.add('testing');$('status').textContent='DO NOT DO ANYTHING';raf=requestAnimationFrame(tick)}function finish(){if(!active)return;active=false;cancelAnimationFrame(raf);last=performance.now()-start;document.body.classList.remove('testing');$('clock').textContent=fmt(last);$('status').textContent='ACTIVITY DETECTED — EXPERIMENT TERMINATED';$('result').classList.add('visible');$('summary').textContent=`You successfully accomplished ${fmt(last)} seconds of nothing. This record was produced by your inability to continue.`;svgText=makeArt(last);$('art').innerHTML=svgText;$('result').scrollIntoView({behavior:'smooth',block:'start'})}function reset(){active=false;cancelAnimationFrame(raf);document.body.classList.remove('testing');$('clock').textContent='0.00';$('status').textContent='INSTRUMENT READY';$('result').classList.remove('visible');last=0}function activity(e){if(!active||performance.now()<armedAt)return;if(e.type==='pointermove'&&e.pointerType==='touch')return;finish()}$('start').addEventListener('click',begin);$('reset').addEventListener('click',reset);$('again').addEventListener('click',()=>{reset();window.scrollTo({top:0,behavior:'smooth'})});['pointermove','pointerdown','keydown','wheel','touchstart','scroll'].forEach(ev=>window.addEventListener(ev,activity,{passive:true}));document.addEventListener('visibilitychange',()=>{if(document.hidden&&active)finish()});function makeArt(ms){
+  // The measured duration is the seed: the same result reproduces the same print.
+  let s=(Math.floor(ms*10)+17)>>>0;
+  function rnd(){s=(Math.imul(1664525,s)+1013904223)>>>0;return s/4294967296}
+  const palettes=[
+    ['#f1e7d2','#e6532f','#d9b64c','#243d38'],
+    ['#f0e8d7','#d14c36','#e8a18b','#333e66'],
+    ['#efe9d9','#59745b','#e4b944','#d55d37'],
+    ['#f2dfc9','#b84735','#dc963d','#443847']
+  ];
+  const [paper,red,gold,deep]=palettes[Math.floor(rnd()*palettes.length)];
+  const ink='#20221e',mode=Math.floor(rnd()*3);
+  const names=['UNUSED POTENTIAL','ABSENCE IN ORBIT','NOTHING UNDER CONSTRUCTION'];
+  const mark=String(Math.floor(ms*10)).padStart(7,'0');
+  const level=Math.min(1,Math.log1p(ms/1000)/5);
+  const cx=270+rnd()*75,cy=310+rnd()*45;
+  let shapes='';
+  const circle=(x,y,r,fill,extra='')=>'<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+fill+'" '+extra+'/>';
+  const rect=(x,y,w,h,fill,extra='')=>'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+fill+'" '+extra+'/>';
+  const line=(x,y,x2,y2,color,width=1)=>'<path d="M'+x+' '+y+'L'+x2+' '+y2+'" fill="none" stroke="'+color+'" stroke-width="'+width+'"/>';
+  if(mode===0){
+    // A monumental empty center, with an off-register second impression.
+    shapes+=rect(34,86,532,510,gold);
+    shapes+=circle(cx+13,cy+12,184,red);
+    shapes+=circle(cx,cy,184,deep);
+    shapes+=circle(cx-13,cy-9,94+level*28,paper);
+    for(let i=0;i<9;i++)shapes+=rect(48,116+i*12,82+i*8,4,ink);
+    shapes+='<g transform="translate(443 459) rotate(-24)">'+rect(-24,-79,48,158,red)+rect(-79,-24,158,48,red)+'</g>';
+    shapes+=circle(102,515,33,red)+circle(102,515,9,paper);
+    shapes+=line(392,109,534,109,ink,2)+line(534,109,534,184,ink,2);
+  }else if(mode===1){
+    // Orbital mechanics for an object with no assigned purpose.
+    shapes+=rect(34,86,532,510,deep);
+    shapes+=circle(308,343,193,gold);
+    shapes+=circle(354,299,151,paper);
+    shapes+=circle(354,299,87,red);
+    shapes+=circle(354,299,31,deep);
+    shapes+='<g transform="rotate(-32 300 340)">';
+    for(let i=0;i<5;i++)shapes+='<ellipse cx="300" cy="340" rx="'+(228-i*12)+'" ry="'+(78-i*10)+'" fill="none" stroke="'+ink+'" stroke-width="2"/>';
+    shapes+='</g>';
+    shapes+=circle(115,386,30,red)+circle(473,445,19,paper);
+    for(let i=0;i<7;i++)shapes+=rect(64+i*10,112,4,52, paper);
+    shapes+=line(65,549,182,549,paper,2);
+  }else{
+    // Bureaucratic scaffolding around a carefully preserved void.
+    shapes+=rect(34,86,532,510,red);
+    shapes+=circle(381,245,126,gold);
+    for(let i=0;i<6;i++)shapes+=rect(66+i*65,518-i*59,66,78+i*59,deep);
+    shapes+=circle(306,348,108,paper);
+    shapes+=circle(306,348,48,red);
+    shapes+=rect(53,154,207,23,ink,'transform="rotate(-28 53 154)"');
+    for(let i=0;i<6;i++)shapes+=line(392+i*20,113,392+i*20,173,ink,3);
+    shapes+=circle(102,470,26,gold);
+  }
+  // More waiting adds small calibration marks, rather than visual clutter.
+  const ticks=8+Math.floor(level*25);
+  for(let i=0;i<ticks;i++){
+    const x=64+i*14;
+    shapes+=line(x,580,x,580-(i%5===0?15:6),mode===1?paper:ink,1);
+  }
+  // One tiny, unhelpful observer.
+  shapes+='<g transform="translate(492 541) rotate(-15)" stroke="'+paper+'" stroke-width="1.4" fill="'+ink+'">'+
+    '<ellipse cx="0" cy="0" rx="5" ry="7"/><circle cy="-10" r="3"/>'+
+    '<path d="M-3-4l-8-5M3-4l8-5M-4 0l-9 2M4 0l9 2M-3 5l-7 7M3 5l7 7" fill="none"/></g>';
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 780" role="img" aria-label="Headmosh geometric print: '+names[mode]+', generated from '+fmt(ms)+' seconds of inactivity">'+
+    rect(0,0,600,780,paper)+
+    '<g font-family="Arial,Helvetica,sans-serif" fill="'+ink+'">'+
+    '<text x="34" y="37" font-size="13" font-weight="900" letter-spacing="1.1">HEADMOSH STUDIO / FIELD RECORD</text>'+
+    '<text x="566" y="59" text-anchor="end" font-size="10">NO. '+mark+'</text>'+
+    line(34,69,566,69,ink,2)+
+    '<g clip-path="url(#print-area)">'+shapes+'</g>'+
+    '<defs><clipPath id="print-area">'+rect(34,86,532,510,'white')+'</clipPath></defs>'+
+    '<text x="34" y="623" font-size="10" font-weight="700" letter-spacing="1.5">'+names[mode]+'</text>'+
+    '<text x="34" y="687" font-size="63" font-weight="900" letter-spacing="-3" textLength="520" lengthAdjust="spacingAndGlyphs">'+fmt(ms)+' SECONDS</text>'+
+    line(34,708,566,708,ink,2)+
+    '<text x="34" y="735" font-size="11" font-weight="900">NOTHING HAPPENED. THIS IS THE EVIDENCE.</text>'+
+    '<text x="34" y="757" font-size="9" letter-spacing="1">EXPERIMENT 001 / DURATION TRANSLATED INTO FORM</text>'+
+    '</g></svg>';
+} $('save').addEventListener('click',()=>{if(!svgText)return;const blob=new Blob([svgText],{type:'image/svg+xml'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='headmosh-nothing-'+fmt(last).replace('.','-')+'.svg';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)});})();
 </script></body></html>
